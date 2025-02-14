@@ -3,6 +3,11 @@ import folium
 from streamlit_folium import st_folium
 import math
 import random
+from main import draw_map, setup, start_app, base_map, create_circlepoint, add_line_to_map
+from data import obstacles, blood_spots
+from enums import State
+
+index = 1
 
 #############################
 # Nastavení celé stránky
@@ -64,7 +69,7 @@ def nearest(nodes, random_point):
 #############################
 
 def rrt_planner(
-    start, goal, obstacles, 
+    start, goal, obstacles=None,
     x_limit=(0,10), y_limit=(0,10),
     step_size=0.5, max_iter=1000,
     goal_threshold=0.5
@@ -109,63 +114,66 @@ def rrt_planner(
 #############################
 
 def main():
+    setup()
     st.title("Plná šířka okna: RRT s Folium mapou")
 
+    obstacles_temp = [(5.0, 5.0, 2.0)]  # jedna překážka
+
     if "map_object" not in st.session_state:
+        st.session_state["nodes"] = None
+        st.session_state["path"] = None
         st.session_state["map_object"] = None
         st.session_state["path_found"] = False
         st.session_state["final_length"] = 0.0
 
     # Sidebar
-    start_x = st.sidebar.slider("Start X", 0.0, 10.0, 1.0, 0.1)
-    start_y = st.sidebar.slider("Start Y", 0.0, 10.0, 1.0, 0.1)
-    goal_x  = st.sidebar.slider("Goal X",  0.0, 10.0, 9.0, 0.1)
-    goal_y  = st.sidebar.slider("Goal Y",  0.0, 10.0, 9.0, 0.1)
+    start = st.sidebar.selectbox("Start", blood_spots)
+    goal = st.sidebar.selectbox("End", blood_spots)
 
-    step_size = st.sidebar.slider("Krok RRT", 0.1, 2.0, 0.5, 0.1)
+    option = st.sidebar.selectbox(
+        'Choose an option:',  # Label for the dropdown
+        [State.WEEKDAY, State.WEEKEND]  # List of options
+    )
+
+    st.session_state["state"] = option
+
+    step_size = st.sidebar.slider("Krok RRT", 0.00001, 2.0, 0.00001, 0.005)
     max_iter  = st.sidebar.slider("Max Iterací", 100, 5000, 1000, 100)
 
     # Tlačítko
     if st.sidebar.button("Spustit RRT"):
-        start = (start_x, start_y)
-        goal  = (goal_x, goal_y)
-
-        obstacles = [(5.0, 5.0, 2.0)]  # jedna překážka
-
         nodes, parent, path = rrt_planner(
-            start, goal, obstacles,
+            start, goal, obstacles_temp,
             x_limit=(0,10), y_limit=(0,10),
             step_size=step_size, max_iter=max_iter,
             goal_threshold=0.5
         )
 
+        st.session_state["nodes"] = nodes
+        st.session_state["path"] = path
+
+        st.session_state["path"].append(start)
+        st.session_state["path"].append(goal)
+
         center_lat = 49.7475
         center_lon = 13.3776
-        
-        m = folium.Map(location=[center_lat, center_lon], zoom_start=13)
 
-        folium.Circle(
-            location=[5.0, 5.0],
-            radius=2000,  
-            color='red',
-            fill=True,
-            fill_opacity=0.3
-        ).add_to(m)
+        m = folium.Map(location=[center_lat, center_lon], zoom_start=13)
 
         # Start a cíl
         folium.Marker(
-            location=[start_y, start_x], 
-            popup="Start", 
+            location=start,
+            popup="Start",
             icon=folium.Icon(color="blue")
         ).add_to(m)
         folium.Marker(
-            location=[goal_y, goal_x],
+            location=goal,
             popup="Goal",
             icon=folium.Icon(color="green")
         ).add_to(m)
 
         if path:
-            path_coords = [[p[1], p[0]] for p in path]
+            path_coords = [[p[0], p[1]] for p in st.session_state["path"]]
             folium.PolyLine(
                 locations=path_coords,
                 color="red",
@@ -183,9 +191,14 @@ def main():
 
         st.session_state["map_object"] = m
 
+    if st.session_state["path"] and index < len(st.session_state["path"]):
+        st.fragment(add_line_to_map, run_every=0.5)(st.session_state["path"][index - 1], st.session_state["path"][index])
+
+    draw_map()
+
     if st.session_state["map_object"] is not None:
         # Zde nastavujeme opravdu velké rozměry
-        st_folium(st.session_state["map_object"], width=2000, height=1200)
+        st_folium(st.session_state["map_object"], width=2000, height=700)
         
         if st.session_state["path_found"]:
             st.info(f"Poslední nalezená cesta: délka {st.session_state['final_length']:.2f}")

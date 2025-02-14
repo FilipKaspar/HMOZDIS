@@ -5,6 +5,7 @@ import math
 import random
 import io
 import base64
+from main import draw_map, setup, start_app, base_map, create_circlepoint
 
 from matplotlib.animation import FuncAnimation
 
@@ -302,6 +303,8 @@ def birrt_planner(start, goal, obstacles, x_limit, y_limit, step_size=0.5, max_i
 #############################
 
 def main():
+    st.set_page_config(layout="wide")
+
     st.title("Plánování trasy: RRT, RRT* a Bi-RRT (pouze GIF)")
 
     algo_choice = st.sidebar.selectbox("Vyber algoritmus", ["RRT", "RRT*", "Bi-RRT"])
@@ -318,6 +321,8 @@ def main():
 
     # RRT* – poloměr re-wire
     star_radius = st.sidebar.slider("RRT* re-wire radius", 0.1, 5.0, 1.0, 0.1)
+
+    start_app()
 
     if st.button("Spustit"):
         start = (start_x, start_y)
@@ -348,6 +353,12 @@ def main():
                                                 step_size=step_size,
                                                 max_iter=max_iter,
                                                 goal_threshold=1.0)
+
+        for node in nodes:
+            st.session_state["markers"].append(create_circlepoint(node))
+
+        # for point in path:
+
 
         # Vypočítáme délku cesty
         if path:
@@ -412,7 +423,6 @@ def main():
 
         else:
             st.write("**Animace není k dispozici (cesta nenalezena nebo má jen 1 bod).**")
-
 
 if __name__ == "__main__":
     main()
