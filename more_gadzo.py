@@ -8,6 +8,9 @@ import time
 from shapely.geometry import Polygon, LineString
 from geopy.distance import geodesic
 
+#own modules
+from knedlo_zelo import get_google_distance
+
 #############################
 # Vlastní krátké definice
 #############################
@@ -17,20 +20,54 @@ class State:
     WEEKEND = "Weekday"
 
 blood_spots = {
-    "PLASMA PLACE s.r.o.": (49.74832190000001, 13.3753809), 
-    "Unilabs - odběry krve": (49.710246, 13.413911),   
-    "SYNLAB - Odběry krve": (49.7276366, 13.3738645),    
-    "Fakultní nemocnice Plzeň - Transfuzní oddělení": (49.7287571,13.3751242),  
-    "EUC Odběrové místo Plzeň": (49.742039, 13.3273621),    
-    "Unilabs - odběry krve": (49.7447234, 13.3674426),   
-    "BioLife (sanaplasma s.r.o.)": (49.7464564, 13.3680987), 
-    "Amber Plasma Plzeň": (49.72762090000001, 13.3524081),  
-    "SYNLAB - Odběry krve": (49.7450877, 13.3830692),    
-    "Bioptická Laboratoř s.r.o.": (49.7411058, 13.3876321),  
-    "Privamed - nemocnice": (49.765284959069405, 13.359354534829086),     
-    "PLASMA PLACE s.r.o.": (49.7483219, 13.3753809), 
-    "Nemocnice lochotín": (49.763306, 13.379694),
-    "AeskuLab as": (49.7097598,13.4079286)
+    "AeskuLab a.s": {
+        "Coordinates":(49.710246, 13.413911),
+        "Address":"K Rozhraní 944/2, 326 00 Plzeň 2-Slovany"
+        },
+    "SYNLAB - Odběry krve": {
+        "Coordinates":(49.7276366, 13.3738645),
+        "Address":"Majerova 2525/7, 301 00 Plzeň 3"
+        },    
+    "Fakultní nemocnice Plzeň - Transfuzní oddělení": {
+        "Coordinates":(49.7287571,13.3751242),
+        "Address":"17. listopadu 2479, 301 00 Plzeň 3-Jižní Předměstí"
+        },  
+    "EUC Odběrové místo Plzeň": {
+        "Coordinates":(49.742039, 13.3273621),
+        "Address":"Terezie Brzkové 15, 318 00 Plzeň 3"
+        },
+    "Unilabs - odběry krve": {
+        "Coordinates":(49.7447234, 13.3674426),
+        "Address":"Tylova 39, 301 00 Plzeň 3"
+        },
+    "BioLife (sanaplasma s.r.o.)": {
+        "Coordinates":(49.7464564, 13.3680987),
+        "Address":"Poděbradova 2842/1, 301 00 Plzeň 3"
+        },
+    "Amber Plasma Plzeň": {
+        "Coordinates":(49.72762090000001, 13.3524081),
+        "Address":"Technická 3037 /6, 301 00 Plzeň 3"
+        },
+    "SYNLAB - Odběry krve": {
+        "Coordinates":(49.7450877, 13.3830692),
+        "Address":"Denisovo nábř. 1000/4, 301 00 Plzeň 3-Východní Předměstí"
+        },
+    "Bioptická Laboratoř s.r.o.": {
+        "Coordinates":(49.7411058, 13.3876321),
+        "Address":"Rejskova 10, 326 00 Plzeň 2-Slovany"
+        },
+    "Privamed - nemocnice": {
+        "Coordinates":(49.765284959069405, 13.359354534829086),
+        "Address":"Kotíkovská 927/19, 323 00 Plzeň 1-Severní Předměstí"
+        },
+    "PLASMA PLACE s.r.o.": {
+        "Coordinates":(49.7483219, 13.3753809),
+        "Address":"K Rozhraní 944/2, 326 00 Plzeň 2-Slovany"
+        },
+    "Nemocnice Lochotín": {
+        "Coordinates":(49.763306, 13.379694),
+        "Address":"Alej Svobody 923/80, 323 00 Plzeň 1-Severní Předměstí"
+        },
 }
 
 def setup():
@@ -490,8 +527,8 @@ def main():
         # Zavoláme zvolený algoritmus
         if algorithm == "RRT":
             nodes, parent, path = rrt_planner(
-                blood_spots[start],
-                blood_spots[goal],
+                blood_spots[start]['Coordinates'],
+                blood_spots[goal]['Coordinates'],
                 obstacles_temp,
                 x_limit=X_LIM,
                 y_limit=Y_LIM,
@@ -501,8 +538,8 @@ def main():
             )
         elif algorithm == "Bi-RRT":
             nodes, parent, path = bi_rrt_planner(
-                blood_spots[start],
-                blood_spots[goal],
+                blood_spots[start]['Coordinates'],
+                blood_spots[goal]['Coordinates'],
                 obstacles_temp,
                 x_limit=X_LIM,
                 y_limit=Y_LIM,
@@ -512,8 +549,8 @@ def main():
             )
         else:  # RRT*
             nodes, parent, path = rrt_star_planner(
-                blood_spots[start],
-                blood_spots[goal],
+                blood_spots[start]['Coordinates'],
+                blood_spots[goal]['Coordinates'],
                 obstacles_temp,
                 x_limit=X_LIM,
                 y_limit=Y_LIM,
@@ -537,12 +574,12 @@ def main():
 
         # Start, cíl
         folium.Marker(
-            location=blood_spots[start],
+            location=blood_spots[start]['Coordinates'],
             popup=start,
             icon=folium.Icon(color="blue")
         ).add_to(m)
         folium.Marker(
-            location=blood_spots[goal],
+            location=blood_spots[goal]['Coordinates'],
             popup=goal,
             icon=folium.Icon(color="green")
         ).add_to(m)
@@ -552,7 +589,7 @@ def main():
             if place == start or place == goal:
                 continue
             folium.Marker(
-                location=blood_spots[place],
+                location=blood_spots[place]['Coordinates'],
                 popup=place,
                 icon=folium.Icon(color="orange")
             ).add_to(m)
@@ -563,6 +600,10 @@ def main():
             length_m = path_length_meters(path)
             st.session_state["final_length"] = length_m
             st.session_state["path_found"] = True
+
+            google_dist, google_time = get_google_distance(blood_spots[start]["Address"], blood_spots[goal]["Address"])
+            st.session_state['google_dist'] = google_dist
+            st.session_state['google_time'] = google_time
 
             folium.PolyLine(
                 locations=path,
@@ -588,7 +629,10 @@ def main():
         st_folium(st.session_state["map_object"], width=1500, height=700)
         
         if st.session_state["path_found"]:
-            st.info(f"Poslední nalezená cesta (v metrech): {st.session_state['final_length']:.2f}")
+            st.info(f"Poslední nalezená cesta: {st.session_state['final_length']/1000:.1f} km\n\nCesta by trvala: {st.session_state['final_length']/15/60:.1f} minut")
+            st.info(f"API z Google Maps doporučuje pozemní cestu o vzdálenosti: {st.session_state['google_dist']}\n\nTa by aktuálně trvala {int(st.session_state['google_time'].split()[0])} minut")
+            improvement = int(st.session_state['google_time'].split()[0]) / (st.session_state['final_length']/16.7/60)
+            st.markdown(f'To je zrychlení o <span style="color:green; font-size:16px;">{(improvement-1)*100:.2f}%</span>', unsafe_allow_html=True)
         else:
             st.info("Poslední výpočet cestu nenašel.")
     else:
