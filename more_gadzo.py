@@ -625,14 +625,60 @@ def main():
     # Zobrazení mapy
     draw_map()
 
-    if st.session_state["map_object"] is not None:
+    if st.session_state.get("map_object") is not None:
         st_folium(st.session_state["map_object"], width=1500, height=700)
-        
-        if st.session_state["path_found"]:
-            st.info(f"Poslední nalezená cesta: {st.session_state['final_length']/1000:.1f} km\n\nCesta by trvala: {st.session_state['final_length']/15/60:.1f} minut")
-            st.info(f"API z Google Maps doporučuje pozemní cestu o vzdálenosti: {st.session_state['google_dist']}\n\nTa by aktuálně trvala {int(st.session_state['google_time'].split()[0])} minut")
-            improvement = int(st.session_state['google_time'].split()[0]) / (st.session_state['final_length']/16.7/60)
-            st.markdown(f'To je zrychlení o <span style="color:green; font-size:16px;">{(improvement-1)*100:.2f}%</span>', unsafe_allow_html=True)
+
+        if st.session_state.get("path_found"):
+            final_distance_km = st.session_state['final_length'] / 1000
+            final_time_min = st.session_state['final_length'] / 15 / 60
+            google_dist = st.session_state['google_dist']
+            # Pro zjednodušení vycházíme z toho, že 'google_time' je řetězec typu "30 min", apod.
+            google_time_min = int(st.session_state['google_time'].split()[0])
+
+            improvement = google_time_min / (st.session_state['final_length'] / 16.7 / 60)
+            improvement_pct = (improvement - 1) * 100
+
+            # Vytvoříme hezkou tabulku v HTML/Markdown
+            st.markdown(
+                f"""
+                <style>
+                table, th, td {{
+                    border: 1px solid #ccc;
+                    border-collapse: collapse;
+                    padding: 8px;
+                }}
+                th {{
+                    background-color: #f5f5f5;
+                    text-align: left;
+                    width: 280px;
+                }}
+                </style>
+                <table>
+                    <tr>
+                        <th>Poslední nalezená cesta</th>
+                        <td>{final_distance_km:.1f} km</td>
+                    </tr>
+                    <tr>
+                        <th>Cesta by trvala</th>
+                        <td>{final_time_min:.1f} minut</td>
+                    </tr>
+                    <tr>
+                        <th>API z Google Maps doporučuje pozemní cestu o vzdálenosti</th>
+                        <td>{google_dist}</td>
+                    </tr>
+                    <tr>
+                        <th>Ta by aktuálně trvala</th>
+                        <td>{google_time_min} minut</td>
+                    </tr>
+                    <tr>
+                        <th>Zrychlení</th>
+                        <td><span style="color:green; font-weight:bold;">{improvement_pct:.2f}%</span></td>
+                    </tr>
+                </table>
+                """,
+                unsafe_allow_html=True
+            )
+
         else:
             st.info("Poslední výpočet cestu nenašel.")
     else:
