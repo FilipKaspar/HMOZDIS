@@ -92,14 +92,17 @@ def nearest(nodes, random_point):
             near = node
     return near
 
+X_LIM = (49.70, 49.80)
+Y_LIM = (13.30, 13.45)
+
 #############################
 # RRT (klasický)
 #############################
 
 def rrt_planner(
     start, goal, obstacles=None,
-    x_limit=(49.73, 49.76),
-    y_limit=(13.35, 13.40),
+    x_limit=X_LIM,
+    y_limit=Y_LIM,
     step_size_deg=0.00045,
     max_iter=1000,
     goal_threshold=0.0002
@@ -142,8 +145,8 @@ def rrt_planner(
 
 def bi_rrt_planner(
     start, goal, obstacles=None,
-    x_limit=(49.73, 49.76),
-    y_limit=(13.35, 13.40),
+    x_limit=X_LIM,
+    y_limit=Y_LIM,
     step_size_deg=0.00045,
     max_iter=1000,
     goal_threshold=0.0002
@@ -212,8 +215,8 @@ def bi_rrt_planner(
 
 def rrt_star_planner(
     start, goal, obstacles=None,
-    x_limit=(49.73, 49.76),
-    y_limit=(13.35, 13.40),
+    x_limit=X_LIM,
+    y_limit=Y_LIM,
     step_size_deg=0.00045,
     max_iter=1000,
     goal_threshold=0.0002,
@@ -490,8 +493,8 @@ def main():
                 blood_spots[start],
                 blood_spots[goal],
                 obstacles_temp,
-                x_limit=(49.73, 49.76),
-                y_limit=(13.35, 13.40),
+                x_limit=X_LIM,
+                y_limit=Y_LIM,
                 step_size_deg=step_size_deg,
                 max_iter=max_iter,
                 goal_threshold=goal_threshold_deg
@@ -501,8 +504,8 @@ def main():
                 blood_spots[start],
                 blood_spots[goal],
                 obstacles_temp,
-                x_limit=(49.73, 49.76),
-                y_limit=(13.35, 13.40),
+                x_limit=X_LIM,
+                y_limit=Y_LIM,
                 step_size_deg=step_size_deg,
                 max_iter=max_iter,
                 goal_threshold=goal_threshold_deg
@@ -512,8 +515,8 @@ def main():
                 blood_spots[start],
                 blood_spots[goal],
                 obstacles_temp,
-                x_limit=(49.73, 49.76),
-                y_limit=(13.35, 13.40),
+                x_limit=X_LIM,
+                y_limit=Y_LIM,
                 step_size_deg=step_size_deg,
                 max_iter=max_iter,
                 goal_threshold=goal_threshold_deg
